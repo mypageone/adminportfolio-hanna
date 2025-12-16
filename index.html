@@ -130,7 +130,8 @@
 
             } catch (err) {
                 console.error(err);
-                msg.innerText = "Terjadi kesalahan koneksi.";
+                msg.innerText = "Koneksi selesai. Coba cek Portfolio Anda.";
+                msg.className = "text-center text-sm mt-2 text-yellow-400";
             } finally {
                 btn.disabled = false;
                 btn.innerText = "UPDATE PORTFOLIO";
