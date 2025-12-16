@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans p-6">
+
+    <div class="max-w-3xl mx-auto bg-slate-800 p-8 rounded-xl shadow-2xl border border-slate-700">
+        <h1 class="text-2xl font-bold mb-6 text-blue-400">Dashboard Portfolio Hanna</h1>
+        
+        <form id="cmsForm" class="space-y-4">
+            <div class="p-4 bg-red-900/20 border border-red-500/50 rounded-lg mb-6">
+                <label class="block text-sm font-bold text-red-400 mb-1">Admin Password (Wajib)</label>
+                <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-600 rounded p-2 focus:border-blue-500 outline-none" placeholder="Masukkan password spreadsheet Anda">
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs uppercase text-slate-500 mb-1">Nama</label>
+                    <input type="text" id="name" class="cms-input w-full bg-slate-700 rounded p-2">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-500 mb-1">Role / Jabatan</label>
+                    <input type="text" id="role" class="cms-input w-full bg-slate-700 rounded p-2">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs uppercase text-slate-500 mb-1">Tentang Saya</label>
+                <textarea id="about" rows="3" class="cms-input w-full bg-slate-700 rounded p-2"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs uppercase text-slate-500 mb-1">Skills (Pisahkan dengan koma)</label>
+                <input type="text" id="skills" class="cms-input w-full bg-slate-700 rounded p-2">
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs uppercase text-slate-500 mb-1">Pengalaman 1</label>
+                    <input type="text" id="exp_1" class="cms-input w-full bg-slate-700 rounded p-2">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-500 mb-1">Pengalaman 2</label>
+                    <input type="text" id="exp_2" class="cms-input w-full bg-slate-700 rounded p-2">
+                </div>
+            </div>
+
+            <div class="border-t border-slate-600 pt-4 mt-4">
+                <h3 class="text-lg font-semibold mb-3">Project</h3>
+                <input type="text" id="project_1_title" placeholder="Judul Project" class="cms-input w-full bg-slate-700 rounded p-2 mb-2">
+                <input type="text" id="project_1_img" placeholder="URL Gambar Project" class="cms-input w-full bg-slate-700 rounded p-2 mb-2">
+                <textarea id="project_1_desc" placeholder="Deskripsi Project" class="cms-input w-full bg-slate-700 rounded p-2"></textarea>
+            </div>
+
+            <div class="border-t border-slate-600 pt-4 mt-4 grid md:grid-cols-3 gap-2">
+                <input type="text" id="whatsapp" placeholder="No WA (62..)" class="cms-input bg-slate-700 rounded p-2">
+                <input type="text" id="instagram" placeholder="Username IG" class="cms-input bg-slate-700 rounded p-2">
+                <input type="text" id="linkedin" placeholder="URL LinkedIn" class="cms-input bg-slate-700 rounded p-2">
+            </div>
+
+            <button type="submit" id="btnSave" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-6 transition">
+                UPDATE PORTFOLIO
+            </button>
+            <p id="statusMsg" class="text-center text-sm mt-2 text-gray-400"></p>
+        </form>
+    </div>
+
+    <script>
+        // GANTI URL INI DENGAN URL WEB APP ANDA SAMA SEPERTI DI FILE PORTFOLIO
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyW2vbwXwLEhO3FRd01rldiPX-L1kLm551EM0zidxx8OXd7hOMrj2atLHsdQLMQLG5hsg/exec';
+
+        const inputs = document.querySelectorAll('.cms-input');
+
+        // Load current data
+        async function loadData() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                
+                inputs.forEach(input => {
+                    if (data[input.id]) input.value = data[input.id];
+                });
+            } catch (e) {
+                alert("Gagal koneksi ke database");
+            }
+        }
+
+        // Save data
+        document.getElementById('cmsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            const msg = document.getElementById('statusMsg');
+            
+            btn.disabled = true;
+            btn.innerText = "Menyimpan...";
+            msg.innerText = "";
+
+            const payload = {
+                password: document.getElementById('password').value,
+                data: {}
+            };
+
+            inputs.forEach(input => {
+                payload.data[input.id] = input.value;
+            });
+
+            try {
+                // Menggunakan 'no-cors' tidak akan mengembalikan response JSON yang bisa dibaca karena policy browser
+                // Tapi Google Script akan tetap menerima POST data.
+                // Untuk keperluan ini kita gunakan standard fetch POST.
+                
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    msg.innerText = "Berhasil diupdate! Refresh portfolio anda.";
+                    msg.className = "text-center text-sm mt-2 text-green-400";
+                } else {
+                    msg.innerText = "Gagal: " + (result.message || "Cek Password");
+                    msg.className = "text-center text-sm mt-2 text-red-400";
+                }
+
+            } catch (err) {
+                console.error(err);
+                msg.innerText = "Terjadi kesalahan koneksi.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "UPDATE PORTFOLIO";
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
